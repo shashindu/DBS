@@ -1,5 +1,6 @@
 package com.dbs.weatherapp.model;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.Data;
 @Document("WeatherReport")
 public class WeatherReport {
 
+	@Id
 	private WeatherReportId id;
 	
 	private String timezone;

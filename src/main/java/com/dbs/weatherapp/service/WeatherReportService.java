@@ -7,5 +7,5 @@ import com.dbs.weatherapp.model.WeatherReport;
 public interface WeatherReportService {
 
 	public List<WeatherReport> getWeatherReportForToday();
-	public void save(WeatherReport forecast);
+	public void save(WeatherReport report);
 }

@@ -12,6 +12,6 @@ import com.dbs.weatherapp.model.WeatherReportId;
 public interface WeatherReportRepository extends MongoRepository<WeatherReport, WeatherReportId> {
 
 	@Query(value = "{'id.date': ?0}")
-    List<WeatherReport> findByForecastDate(LocalDate date);
+    List<WeatherReport> findByWeatherReportDate(LocalDate date);
 
 }
