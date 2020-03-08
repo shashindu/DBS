@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,8 @@ import rx.schedulers.Schedulers;
 @Transactional
 public class WeatherReportServiceImpl implements WeatherReportService{
 
+    private static final Logger logger = LoggerFactory.getLogger(WeatherReportServiceImpl.class);
+    
 	@Autowired
 	WeatherReportRepository weatherReportRepository;
 	
@@ -37,13 +41,14 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 	ApplicationConfiguration conf;
 	@Override
 	public List<WeatherReport> getWeatherReportForToday() {
-
+		logger.info("Executing getWeatherReportForToday WeatherReportServiceImpl");
 		List<Observable<WeatherReport>> responseList = new ArrayList<Observable<WeatherReport>>();
 		Observable<List<WeatherReport>> fetchedData;
 
 		// get Data from Database for the Day
 		List<WeatherReport> forecastData = weatherReportRepository.findByWeatherReportDate(LocalDate.now());
-
+		
+		
 		// check weather all the data present
 		Arrays.asList(LocationEnum.values()).forEach(l -> {
 			if (!checkDataIsPresent(forecastData, l.name())) {
@@ -77,6 +82,7 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 	 * @return
 	 */
 	private boolean checkDataIsPresent(List<WeatherReport> list, String location) {
+		logger.info("Checking for existing data for today in database");
 		return list.stream().filter(o -> o.getId().getLocation().equals(location)).findFirst().isPresent();
 	}	
 
@@ -111,6 +117,7 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 	 * @return [WeatherResponse]
 	 */
 	private WeatherResponse fetchWeatherData(LocationEnum location) {
+		logger.info("API call for location "+location);
 		final String url = ApplicationConstants.DARK_SKY_ENPOINT + conf.getDarkSkyToken() + "/" + location.getLat()
 				+ "," + location.getLon() + "/?exclude=currently,flags,minutely,hourly";
 
@@ -125,14 +132,16 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 	 */
 	@Override
 	public void save(WeatherReport forecast) {
+		logger.info("Saving weather report");
 		weatherReportRepository.save(forecast);
 	}
 
 	/**
 	 * Housekeeping records that are more than 3 days old
 	 */
-//	@Override
-//	public void housekeepData() {
-//		weatherReportRepository.housekeepData(LocalDate.now().minusDays(3));
-//	}
+	@Override
+	public void housekeepData() {
+		logger.info("Housekeeping activity has been started :"+LocalDate.now());
+		weatherReportRepository.housekeepData(LocalDate.now().minusDays(3));
+	}
 }

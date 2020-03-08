@@ -4,7 +4,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
-
+/**
+ * 
+ * @author ShashinduSamarasingh
+ *
+ */
 @Data
 @Document("WeatherReport")
 public class WeatherReport {

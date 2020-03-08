@@ -3,7 +3,11 @@ package com.dbs.weatherapp.model;
 import java.time.LocalDate;
 
 import lombok.Data;
-
+/**
+ * 
+ * @author ShashinduSamarasingh
+ *
+ */
 @Data
 public class WeatherReportId {
 

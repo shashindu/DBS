@@ -3,7 +3,11 @@ package com.dbs.weatherapp.response;
 import java.util.List;
 
 import lombok.Data;
-
+/**
+ * 
+ * @author ShashinduSamarasingh
+ *
+ */
 @Data
 public class Daily {
 

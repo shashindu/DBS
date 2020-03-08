@@ -1,5 +1,9 @@
 package com.dbs.weatherapp.masterData;
-
+/**
+ * 
+ * @author ShashinduSamarasingh
+ *
+ */
 public enum LocationEnum {
 
 	CA("Campbell, CA", 37.2872,-121.9500),

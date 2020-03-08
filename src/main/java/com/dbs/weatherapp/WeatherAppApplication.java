@@ -3,7 +3,11 @@ package com.dbs.weatherapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
+/**
+ * 
+ * @author ShashinduSamarasingh
+ *
+ */
 @SpringBootApplication
 @EnableScheduling
 public class WeatherAppApplication {
