@@ -1,5 +1,8 @@
 package com.dbs.weatherapp.response;
 
+import lombok.Data;
+
+@Data
 public class DailyDetail {
 
 	String summary;

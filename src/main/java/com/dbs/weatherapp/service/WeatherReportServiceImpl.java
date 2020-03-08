@@ -35,48 +35,81 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 	
 	@Autowired
 	ApplicationConfiguration conf;
-	
 	@Override
 	public List<WeatherReport> getWeatherReportForToday() {
+
 		List<Observable<WeatherReport>> responseList = new ArrayList<Observable<WeatherReport>>();
-		Observable<List<WeatherReport>> apiData;
-		
-		List<WeatherReport> weatherReportData = weatherReportRepository.findByWeatherReportDate(LocalDate.now());
-		
-		Arrays.asList(LocationEnum.values()).forEach(loc ->{
-			if(!isDataExists(weatherReportData, loc.name())) {
-				responseList.add(getApiData(loc));
+		Observable<List<WeatherReport>> fetchedData;
+
+		// get Data from Database for the Day
+		List<WeatherReport> forecastData = weatherReportRepository.findByWeatherReportDate(LocalDate.now());
+
+		// check weather all the data present
+		Arrays.asList(LocationEnum.values()).forEach(l -> {
+			if (!checkDataIsPresent(forecastData, l.name())) {
+				responseList.add(getWeatherReportApiData(l));
 			}
-			
 		});
-				
-		if(!weatherReportData.isEmpty()) {
-			apiData = Observable.zip(responseList, obj ->{
-				for(Object o: obj) {
-					save((WeatherReport)o);
-					weatherReportData.add((WeatherReport)o);
+
+		// call back external API to fetch missing data
+		if (!responseList.isEmpty()) {
+			fetchedData = Observable.zip(responseList, objects -> {
+				for (Object obj : objects) {
+					//persist data to the DB
+					save((WeatherReport) obj);
+					forecastData.add((WeatherReport) obj);
 				}
-				return weatherReportData;
-			}).onErrorReturn(throwable ->{
-				return weatherReportData;
+				return forecastData;
+			}).onErrorReturn(throwable -> {
+				return forecastData;
 			});
-		    
-		}else {
-			apiData = Observable.just(weatherReportData);
+		} else {
+			fetchedData = Observable.just(forecastData);
 		}
-		return apiData.toBlocking().first();
+
+		return fetchedData.toBlocking().first();
 	}
 
-	private boolean isDataExists(List<WeatherReport> weatherReportData, String location) {
-		return weatherReportData.stream().filter(obj -> obj.getId().getLocation().equals(location)).findFirst().isPresent();
+	/**
+	 * Check if forecast data is present in the given collection
+	 * @param list
+	 * @param location
+	 * @return
+	 */
+	private boolean checkDataIsPresent(List<WeatherReport> list, String location) {
+		return list.stream().filter(o -> o.getId().getLocation().equals(location)).findFirst().isPresent();
+	}	
+
+	/**
+	 * get observable WeatherReport Data and map
+	 * @param l
+	 * @return
+	 */
+	private Observable<WeatherReport> getWeatherReportApiData(LocationEnum l) {
+		return Observable.fromCallable(() -> fetchWeatherData(l))
+				.map(new Func1<WeatherResponse, WeatherReport> () {
+					@Override
+					public WeatherReport call(WeatherResponse t) {
+						WeatherReport temp = new WeatherReport(
+								new WeatherReportId(l.name(), LocalDate.now()),
+								l.getLocationCode(),
+								t.getDaily().getData().get(0).getSummary(),
+								t.getDaily().getData().get(0).getIcon(),
+								t.getDaily().getData().get(0).getHumidity(),
+								t.getDaily().getData().get(0).getTemperatureMin(),
+								t.getDaily().getData().get(0).getTemperatureMax()
+								);
+						return temp;
+					}
+				})
+				.subscribeOn(Schedulers.computation());
 	}
-	
-	@Override
-	public void save(WeatherReport report) {
-		weatherReportRepository.save(report);
-		
-	}
-	
+     
+	/**
+	 * External API call
+	 * @param location
+	 * @return [WeatherResponse]
+	 */
 	private WeatherResponse fetchWeatherData(LocationEnum location) {
 		final String url = ApplicationConstants.DARK_SKY_ENPOINT + conf.getDarkSkyToken() + "/" + location.getLat()
 				+ "," + location.getLon() + "/?exclude=currently,flags,minutely,hourly";
@@ -86,29 +119,20 @@ public class WeatherReportServiceImpl implements WeatherReportService{
 
 		return result;
 	}
-	
-	private rx.Observable<WeatherReport> getApiData(LocationEnum loc){
-		return rx.Observable.fromCallable(() ->fetchWeatherData(loc))
-			   .map(new Func1<WeatherResponse, WeatherReport>(){
-				   
-				  @Override
-				  public WeatherReport call (WeatherResponse r) {
-					  WeatherReport report = new WeatherReport(
-							  new WeatherReportId(loc.name(), LocalDate.now()),
-							  loc.getLocationCode(),
-								r.getDaily().getData().get(0).getSummary(),
-								r.getDaily().getData().get(0).getIcon(),
-								r.getDaily().getData().get(0).getHumidity(),
-								r.getDaily().getData().get(0).getTemperatureMin(),
-								r.getDaily().getData().get(0).getTemperatureMax()
-							  
-							  );
-					  return report;
-					  
-				  }
-				   
-			   }).subscribeOn(Schedulers.computation());
-		
+
+	/**
+	 * Save WeatherReport
+	 */
+	@Override
+	public void save(WeatherReport forecast) {
+		weatherReportRepository.save(forecast);
 	}
 
+	/**
+	 * Housekeeping records that are more than 3 days old
+	 */
+//	@Override
+//	public void housekeepData() {
+//		weatherReportRepository.housekeepData(LocalDate.now().minusDays(3));
+//	}
 }

@@ -1,10 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="ISO-8859-1">
-<title>Hello !</title>
-</head>
-<body>
+<meta charset="UTF-8" />
+<title>Insert title here</title>
+<!-- Bootstrap core CSS -->
+<link href="http://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css"/>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link href="css/style.css" rel="stylesheet" type="text/css"/>
 
+</head>
+<body class="bg">
+<section id="#team" class="pb-5">
+    <div class="container" th:switch="${forecastList}">
+        <h5 class="section-title h1">Today's Weather Forecast</h5>
+        <div class="row">
+            <!-- Team member -->
+            <div class="col-xs-12 col-sm-6 col-md-4 "  th:each="e : ${forecastList}">
+                <div class="image-flip" ontouchstart="this.classList.toggle('hover');">
+                    <div class="mainflip">
+                        <div class="frontside">
+                            <div class="card" style="background-color: rgba(0, 0, 0, 0.5) !important">
+                                <div class="card-body text-center">
+                                    <p><img class=" img-fluid" th:src="@{${'images/' + e.icon +'.png'}}" alt="card image"></p>
+                                    <h4 class="card-title" style="color:white" th:text="${e.timezone}"></h4>
+                                    <p class="card-text"></p>
+                                </div>
+                           		<div >					
+									<div class="row">
+										<div class="col-4 text-center">
+											<span style="color:white"> Max Temp</span>
+										</div>
+										<div class="col-4 text-center">
+											<span style="color:white">Min Temp</span>
+										</div>
+										<div class="col-4 text-center">
+											<span style="color:white">Humidity</span>
+										</div>				
+									</div>
+									<!-- weather body data -->
+									<div class="row">
+										<div class="col-4 text-center">
+											<img src="images/temperature.png" width="30"></img>
+											<span style="color:white" th:text="${e.temperatureMax}"></span> 
+										</div>
+										<div class=" col-4 text-center">
+											<img src="images/temperature.png" width="30"></img>
+											<span style="color:white" th:text="${e.temperatureMin}"></span>
+										</div>
+										<div class=" col-4 text-center">
+											<img src="images/humidity.png" width="20"></img>
+										 	<span style="color:white" th:text="${e.humidity}"></span> 
+										</div>
+									</div>
+								</div>          
+                        	</div>
+                        </div>
+                        <div class="backside">
+                            <div class="card" style="background-color: rgba(0, 0, 0, 0.5) !important">
+                                <div class="card-body text-center mt-4">
+                                    <h4 class="card-title" style="color:white" th:text="${e.timezone}"></h4>
+                                    <p class="card-text" style="color:white" th:text="${e.summary}"></p>                                   
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 </body>
 </html>
